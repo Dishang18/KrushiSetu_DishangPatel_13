@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, FileCheck, ShoppingCart, Settings, Package } from 'lucide-react';
+import { Home, Users, FileCheck, ShoppingCart, Settings, Package, User } from 'lucide-react';
 
 function AdminNavLinks() {
   const navLinkClass = ({ isActive }) => 
@@ -15,6 +15,11 @@ function AdminNavLinks() {
       <NavLink to="/admin/dashboard" className={navLinkClass}>
         <Home className="w-5 h-5 mr-3" />
         Dashboard
+      </NavLink>
+      
+      <NavLink to="/admin/profile" className={navLinkClass}>
+        <User className="w-5 h-5 mr-3" />
+        Profile
       </NavLink>
       
       <NavLink to="/admin/users" className={navLinkClass}>

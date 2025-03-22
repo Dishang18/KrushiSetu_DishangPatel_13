@@ -31,9 +31,11 @@ function FarmerDashboard() {
         setFarmerName(user.name || 'Farmer');
         
         try {
+          const userId = user._id;
+          console.log(user?._id);
           // Fetch document status
           const response = await axiosInstance.get(
-            `/documents/farmer/${user.id}`
+            `/documents/farmer/${userId}`
           );
           
           const docs = response.data;

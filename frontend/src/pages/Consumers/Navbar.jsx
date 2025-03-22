@@ -9,12 +9,14 @@ import {
   Leaf
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const currentUser = "Dishang18";
-  
+  const {logout} = useAuth();
+
   return (
     <nav className="bg-green-700 text-white shadow-lg fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,7 +69,10 @@ const Navbar = () => {
                   <Link to="/consumer/wishlist" className="block px-4 py-2 hover:bg-gray-100">Wishlist</Link>
                   <Link to="/consumer/settings" className="block px-4 py-2 hover:bg-gray-100">Settings</Link>
                   <div className="border-t border-gray-200"></div>
-                  <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100">Logout</Link>
+                  <Link onClick={() => {
+                    logout(); // Use our logout function from useAuth
+                    navigate("/");
+                  }} className="block px-4 py-2 hover:bg-gray-100">Logout</Link>
                 </div>
               )}
             </div>
@@ -116,7 +121,10 @@ const Navbar = () => {
                 Cart <span className="ml-1 bg-yellow-500 text-xs rounded-full px-2 py-1">3</span>
               </Link>
               <Link to="/consumer/settings" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-600">Settings</Link>
-              <Link to="/logout" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-600">Logout</Link>
+              <Link onClick={() => {
+                    logout(); // Use our logout function from useAuth
+                    navigate("/");
+                  }} className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-600">Logout</Link>
             </div>
           </div>
         </div>

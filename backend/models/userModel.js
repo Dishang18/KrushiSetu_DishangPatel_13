@@ -30,6 +30,39 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  pincode: {
+    type: String,
+    trim: true
+  },
+  location: {
+    country: {
+      type: String,
+      default: "India"
+    },
+    state: {
+      type: String
+    },
+    district: {
+      type: String
+    },
+    block: {
+      type: String
+    },
+    village: {
+      type: String
+    }
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  bio: {
+    type: String,
+    maxlength: 500
+  },
+  profileImage: {
+    type: String,
+  },
   refreshToken: {
     type: String
   }

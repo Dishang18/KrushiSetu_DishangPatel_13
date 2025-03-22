@@ -34,6 +34,14 @@ export const userSlice = createSlice({
     },
     updateUser: (state, action) => {
       state.user = { ...state.user, ...action.payload };
+    },
+    updateUserData: (state, action) => {
+      // Merge the new user data with the existing user data
+      // This action is used to store complete profile data
+      state.user = { 
+        ...state.user, 
+        ...action.payload,
+      };
     }
   }
 });
@@ -43,7 +51,8 @@ export const {
   loginSuccess, 
   loginFailure, 
   logout, 
-  updateUser 
+  updateUser,
+  updateUserData
 } = userSlice.actions;
 
 export default userSlice.reducer; 

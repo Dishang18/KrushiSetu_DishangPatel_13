@@ -40,8 +40,17 @@ export const googleSignIn = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        name: user.name,
         role: user.role,
-        admin: !!user.admin
+        admin: !!user.admin,
+        phoneNumber: user.phoneNumber,
+        pincode: user.pincode,
+        location: user.location,
+        address: user.address,
+        bio: user.bio,
+        profileImage: user.profileImage,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       },
       token: idToken,
       isExistingUser // Flag that the frontend can check
@@ -113,7 +122,15 @@ export const loginUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        pincode: user.pincode,
+        location: user.location,
+        address: user.address,
+        bio: user.bio,
+        profileImage: user.profileImage,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       },
       token,
       refreshToken

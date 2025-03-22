@@ -2,39 +2,66 @@ import mongoose from 'mongoose';
 import { GridFSBucket } from 'mongodb';
 import crypto from 'crypto';
 
-let gridFSBucket;
+// Define separate buckets for different types of files
+let farmerDocumentsBucket;
+let profileImagesBucket;
 
-// Initialize GridFS bucket
+// Initialize GridFS buckets
 export const initGridFS = (db) => {
   try {
-    gridFSBucket = new GridFSBucket(db, {
+    // Create bucket for farmer documents
+    farmerDocumentsBucket = new GridFSBucket(db, {
       bucketName: 'farmerDocuments'
     });
     console.log('GridFS bucket initialized with bucketName: farmerDocuments');
-    return gridFSBucket;
+    
+    // Create separate bucket for profile images
+    profileImagesBucket = new GridFSBucket(db, {
+      bucketName: 'profileImages'
+    });
+    console.log('GridFS bucket initialized with bucketName: profileImages');
+    
+    return { farmerDocumentsBucket, profileImagesBucket };
   } catch (error) {
-    console.error('Error initializing GridFS bucket:', error);
+    console.error('Error initializing GridFS buckets:', error);
     throw error;
   }
 };
 
-// Get GridFS bucket
-export const getGridFSBucket = () => {
-  if (!gridFSBucket) {
-    if (!mongoose.connection.db) {
-      throw new Error('MongoDB connection not established. Cannot initialize GridFS.');
+// Get the appropriate GridFS bucket based on file type
+export const getGridFSBucket = (fileType = 'document') => {
+  if (fileType === 'profileImage') {
+    if (!profileImagesBucket) {
+      if (!mongoose.connection.db) {
+        throw new Error('MongoDB connection not established. Cannot initialize GridFS.');
+      }
+      console.log('Creating new profile images GridFS bucket');
+      initGridFS(mongoose.connection.db);
+      return profileImagesBucket;
     }
-    console.log('Creating new GridFS bucket');
-    return initGridFS(mongoose.connection.db);
+    return profileImagesBucket;
+  } else {
+    // Default to farmer documents bucket
+    if (!farmerDocumentsBucket) {
+      if (!mongoose.connection.db) {
+        throw new Error('MongoDB connection not established. Cannot initialize GridFS.');
+      }
+      console.log('Creating new farmer documents GridFS bucket');
+      initGridFS(mongoose.connection.db);
+      return farmerDocumentsBucket;
+    }
+    return farmerDocumentsBucket;
   }
-  return gridFSBucket;
 };
 
 // Create a stream for uploading files to GridFS
 export const createUploadStream = (filename, metadata) => {
   try {
-    const bucket = getGridFSBucket();
-    console.log(`Creating upload stream for file: ${filename}`);
+    // Get appropriate bucket based on file type
+    const bucketType = metadata.fileType || 'document';
+    const bucket = getGridFSBucket(bucketType);
+    
+    console.log(`Creating upload stream for file: ${filename} in bucket: ${bucketType === 'profileImage' ? 'profileImages' : 'farmerDocuments'}`);
     return bucket.openUploadStream(filename, {
       metadata: {
         ...metadata,
@@ -48,11 +75,11 @@ export const createUploadStream = (filename, metadata) => {
 };
 
 // Create a stream for downloading files from GridFS
-export const createDownloadStream = (fileId) => {
+export const createDownloadStream = (fileId, fileType = 'document') => {
   try {
-    const bucket = getGridFSBucket();
+    const bucket = getGridFSBucket(fileType);
     const objectId = new mongoose.Types.ObjectId(fileId);
-    console.log(`Creating download stream for file ID: ${objectId}`);
+    console.log(`Creating download stream for file ID: ${objectId} from bucket: ${fileType === 'profileImage' ? 'profileImages' : 'farmerDocuments'}`);
     return bucket.openDownloadStream(objectId);
   } catch (error) {
     console.error('Error creating download stream:', error);
@@ -61,11 +88,11 @@ export const createDownloadStream = (fileId) => {
 };
 
 // Delete a file from GridFS
-export const deleteFile = (fileId) => {
+export const deleteFile = (fileId, fileType = 'document') => {
   try {
-    const bucket = getGridFSBucket();
+    const bucket = getGridFSBucket(fileType);
     const objectId = new mongoose.Types.ObjectId(fileId);
-    console.log(`Deleting file with ID: ${objectId}`);
+    console.log(`Deleting file with ID: ${objectId} from bucket: ${fileType === 'profileImage' ? 'profileImages' : 'farmerDocuments'}`);
     return bucket.delete(objectId);
   } catch (error) {
     console.error('Error deleting file:', error);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Package, FileText, ShoppingCart, BarChart2, FileCheck } from 'lucide-react';
+import { Home, Package, FileText, ShoppingCart, BarChart2, FileCheck, User } from 'lucide-react';
 
 function FarmerNavLinks() {
   const navLinkClass = ({ isActive }) => 
@@ -15,6 +15,11 @@ function FarmerNavLinks() {
       <NavLink to="/farmer/dashboard" className={navLinkClass}>
         <Home className="w-5 h-5 mr-3" />
         Dashboard
+      </NavLink>
+      
+      <NavLink to="/farmer/profile" className={navLinkClass}>
+        <User className="w-5 h-5 mr-3" />
+        Profile
       </NavLink>
       
       <NavLink to="/farmer/products" className={navLinkClass}>

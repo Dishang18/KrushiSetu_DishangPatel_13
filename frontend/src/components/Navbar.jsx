@@ -129,7 +129,7 @@ function Navbar() {
                 <button
                   onClick={() => {
                     logout(); // Use our logout function from useAuth
-                    navigate("/login");
+                    navigate("/");
                   }}
                   className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-teal-500/20"
                 >
