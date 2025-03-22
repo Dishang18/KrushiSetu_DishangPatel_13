@@ -12,14 +12,17 @@ import {
 } from "lucide-react";
 import { ChevronDown, User } from "lucide-react";
 import useAuth from "../hooks/useAuth";
+import { useSelector } from 'react-redux';
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+
   // Use our Redux-based auth hook instead of localStorage
   const { isLoggedIn, user, logout } = useAuth();
+
+  const role = user?.role || 'guest';
 
   const navItems = [
     { name: "Home", path: "/", icon: <Home size={18} /> },
@@ -114,7 +117,7 @@ function Navbar() {
 
               <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md shadow-lg py-1 bg-[#1a332e] ring-1 ring-black ring-opacity-5 opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible transition-all">
                 <Link
-                  to="/profile"
+                  to={`/${role}/profile`}
                   className="block px-4 py-2 text-sm text-gray-300 hover:bg-teal-500/20"
                 >
                   Profile
