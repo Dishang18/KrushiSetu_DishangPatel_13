@@ -15,6 +15,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import React from "react";
 import { AlertProvider } from "./components/AlertMessage";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/farmers" element={<Farmers />} />
             <Route path="/about" element={<About />} />
+            <Route path="/*" element={<NotFound />} />
 
             <Route
               path="/login"

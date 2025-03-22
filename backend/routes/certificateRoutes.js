@@ -6,6 +6,147 @@ import User from "../models/userModel.js";
 
 const router = express.Router();
 
+// Add this new public endpoint at the top of your routes
+router.get("/public/farmers", async (req, res) => {
+  try {
+    // Get all users with role 'farmer'
+    const allFarmers = await User.find(
+      { role: "farmer" },
+      { name: 1, email: 1 }
+    );
+
+    // Get all farmer documents
+    const farmerDocs = await FarmerDocument.find({});
+
+    // Create a map for quick lookup
+    const farmerDocsMap = {};
+    farmerDocs.forEach(doc => {
+      farmerDocsMap[doc.farmerId.toString()] = doc;
+    });
+
+    // Process farmers and only include necessary information
+    const farmers = allFarmers.map(farmer => {
+      const doc = farmerDocsMap[farmer._id.toString()];
+      const farmerInfo = {
+        id: farmer._id,
+        name: farmer.name,
+        email: farmer.email,
+        farmType: getFarmerType(farmer._id)
+      };
+
+      if (doc) {
+        farmerInfo.verificationStatus = doc.verificationStatus;
+        farmerInfo.certificateId = doc.certificateId;
+        farmerInfo.certificateIssueDate = doc.certificateIssueDate;
+      }
+
+      return farmerInfo;
+    });
+
+    res.json(farmers);
+  } catch (error) {
+    console.error("Error fetching public farmers list:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Keep the existing statistics endpoint with authentication for admin
+router.get("/statistics", authenticate, async (req, res) => {
+  try {
+    // Get all users with role 'farmer'
+    const allFarmers = await User.find(
+      { role: "farmer" },
+      { name: 1, email: 1 }
+    );
+
+    // Get all farmer documents
+    const farmerDocs = await FarmerDocument.find({});
+
+    // Initialize counters
+    const stats = {
+      totalFarmers: allFarmers.length,
+      verified: 0,
+      pending: 0,
+      partial: 0,
+      rejected: 0,
+      certified: 0,
+      notUploaded: 0
+    };
+
+    // Create a map for quick lookup
+    const farmerDocsMap = {};
+    farmerDocs.forEach(doc => {
+      farmerDocsMap[doc.farmerId.toString()] = doc;
+    });
+
+    // Process each farmer to determine their status
+    const farmers = {
+      verified: [],
+      pending: [],
+      partial: [],
+      rejected: [],
+      certified: [],
+      notUploaded: []
+    };
+
+    allFarmers.forEach(farmer => {
+      const doc = farmerDocsMap[farmer._id.toString()];
+      const farmerInfo = {
+        id: farmer._id,
+        name: farmer.name,
+        email: farmer.email,
+        farmType: getFarmerType(farmer._id)
+      };
+
+      if (!doc) {
+        stats.notUploaded++;
+        farmers.notUploaded.push(farmerInfo);
+      } else {
+        farmerInfo.verificationStatus = doc.verificationStatus;
+        farmerInfo.uploadDate = doc.createdAt;
+        
+        if (doc.certificateId) {
+          farmerInfo.certificateId = doc.certificateId;
+          farmerInfo.certificateIssueDate = doc.certificateIssueDate;
+        }
+
+        switch (doc.verificationStatus) {
+          case 'complete':
+            stats.verified++;
+            farmers.verified.push(farmerInfo);
+            break;
+          case 'pending':
+            stats.pending++;
+            farmers.pending.push(farmerInfo);
+            break;
+          case 'partial':
+            stats.partial++;
+            farmers.partial.push(farmerInfo);
+            break;
+          case 'rejected':
+            stats.rejected++;
+            farmers.rejected.push(farmerInfo);
+            break;
+          case 'certified':
+            stats.certified++;
+            farmers.certified.push(farmerInfo);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    res.json({
+      stats,
+      farmers
+    });
+  } catch (error) {
+    console.error("Error fetching farmer statistics:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 // Verify a certificate by ID
 router.get("/verify/:certificateId", authenticate, async (req, res) => {
   try {
@@ -202,111 +343,6 @@ router.get("/all", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching certificates:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-});
-
-// Get verification statistics for farmers (admin only)
-router.get("/statistics", authenticate, async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Not authorized" });
-    }
-
-    // Get all users with role 'farmer'
-    const allFarmers = await User.find(
-      { role: "farmer" },
-      { name: 1, email: 1 }
-    );
-
-    // Get all farmer documents
-    const farmerDocs = await FarmerDocument.find({});
-
-    // Initialize counters
-    const stats = {
-      totalFarmers: allFarmers.length,
-      verified: 0,
-      pending: 0,
-      partial: 0,
-      rejected: 0,
-      certified: 0,
-      notUploaded: 0
-    };
-
-    // Create a map for quick lookup
-    const farmerDocsMap = {};
-    farmerDocs.forEach(doc => {
-      farmerDocsMap[doc.farmerId.toString()] = doc;
-    });
-
-    // Process each farmer to determine their status
-    const farmers = {
-      verified: [],
-      pending: [],
-      partial: [],
-      rejected: [],
-      certified: [],
-      notUploaded: []
-    };
-
-    allFarmers.forEach(farmer => {
-      const doc = farmerDocsMap[farmer._id.toString()];
-      const farmerInfo = {
-        id: farmer._id,
-        name: farmer.name,
-        email: farmer.email
-      };
-
-      if (!doc) {
-        // Farmer has not uploaded any documents
-        stats.notUploaded++;
-        farmers.notUploaded.push(farmerInfo);
-      } else {
-        // Add document status to farmer info
-        farmerInfo.verificationStatus = doc.verificationStatus;
-        farmerInfo.uploadDate = doc.createdAt;
-        
-        if (doc.certificateId) {
-          farmerInfo.certificateId = doc.certificateId;
-          farmerInfo.certificateIssueDate = doc.certificateIssueDate;
-        }
-
-        // Increment the appropriate counter based on status
-        switch (doc.verificationStatus) {
-          case 'complete':
-            stats.verified++;
-            farmers.verified.push(farmerInfo);
-            break;
-          case 'pending':
-            stats.pending++;
-            farmers.pending.push(farmerInfo);
-            break;
-          case 'partial':
-            stats.partial++;
-            farmers.partial.push(farmerInfo);
-            break;
-          case 'rejected':
-            stats.rejected++;
-            farmers.rejected.push(farmerInfo);
-            break;
-          case 'certified':
-            stats.certified++;
-            farmers.certified.push(farmerInfo);
-            break;
-          default:
-            break;
-        }
-      }
-    });
-
-    console.log("done");
-
-    res.json({
-      stats,
-      farmers
-    });
-  } catch (error) {
-    console.error("Error fetching farmer statistics:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });

@@ -322,15 +322,6 @@ const Farmers = () => {
           
           <div className="bg-gradient-to-br from-[#386259] to-[#2d4f47] rounded-xl border border-teal-500/20 shadow-lg p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-gray-300 text-sm font-medium">Verified</h3>
-              <Check className="h-5 w-5 text-blue-300" />
-            </div>
-            <p className="text-3xl font-bold text-white">{stats?.verified || 0}</p>
-            <p className="text-gray-400 text-xs mt-2">Documents verified</p>
-          </div>
-          
-          <div className="bg-gradient-to-br from-[#386259] to-[#2d4f47] rounded-xl border border-teal-500/20 shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
               <h3 className="text-gray-300 text-sm font-medium">Pending</h3>
               <Clock className="h-5 w-5 text-yellow-300" />
             </div>
@@ -405,9 +396,9 @@ const Farmers = () => {
                   <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
+                  {/* <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
                     Farm Type
-                  </th>
+                  </th> */}
                   <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
                     Status
                   </th>

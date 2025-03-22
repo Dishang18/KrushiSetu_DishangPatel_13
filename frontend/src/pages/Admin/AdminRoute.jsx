@@ -5,6 +5,7 @@ import DocumentVerification from "./DocumentVerification";
 import Certificates from "./Certificates";
 import Farmers from "./Farmers";
 import ProfilePage from "../profile/ProfilePage";
+import NotFound from "../NotFound";
 
 const AdminRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const AdminRoutes = () => {
       <Route path="/certificates" element={<Certificates />} />
       <Route path="/users" element={<Farmers />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/*" element={<NotFound />} />
     </Routes>
   );
 };

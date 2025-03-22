@@ -9,6 +9,8 @@ import cors from "cors";
 import mongoose from 'mongoose';
 import { initGridFS } from './config/gridfsConfig.js';
 import compression from 'compression';
+import { productRoute } from './routes/productRoute.js';
+import { adminRoutes } from './routes/adminRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/products', productRoute);
+app.use('/api/admin', adminRoutes);
 
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URL)

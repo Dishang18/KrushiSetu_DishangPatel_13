@@ -1,29 +1,69 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const ProductSchema = new mongoose.Schema(
-  {
-    farmer_id: { type: String, required: true }, // PostgreSQL Farmer ID
-    farmer_mobile: { type: String, required: true },
-    farmer_location: { type: String, required: true },
-    
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    category: { type: String, required: true },
-    price: { type: Number, required: true },
-    available_quantity: { type: Number, default: 0 },
-    image_url: { type: String, default: "" }, // Product image URL
-
-    qr_code: { type: String, default: "" }, // Blockchain verification hash
-
-    traceability: {
-      farm_location: String,
-      harvest_date: Date,
-      harvest_method: String, // e.g., Organic, Hydroponic
-      certified_by: String, // Certification authority
-    },
+const productSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Product name is required'],
+    trim: true
   },
-  { timestamps: true } // Automatically adds `createdAt` & `updatedAt`
-);
+  description: {
+    type: String,
+    required: [true, 'Product description is required']
+  },
+  category: {
+    type: String,
+    required: [true, 'Category is required'],
+    enum: ['Vegetables', 'Fruits', 'Dairy', 'Grains', 'Spices', 'Herbs', 'Other']
+  },
+  price: {
+    type: Number,
+    required: [true, 'Price is required'],
+    min: [0, 'Price cannot be negative']
+  },
+  units:{
+    type: String,
+    required: [true, 'Units are required']
+  },
+  available_quantity: {
+    type: Number,
+    required: [true, 'Available quantity is required'],
+    min: [0, 'Quantity cannot be negative']
+  },
+  image_id: {
+    type: mongoose.Schema.Types.ObjectId
+  },
+  image_url: {
+    type: String
+  },
+  farmer_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Farmer ID is required']
+  },
+  traceability: {
+    farm_location: String,
+    harvest_method: {
+      type: String,
+      enum: ['Organic', 'Conventional', 'Hydroponic', 'Aquaponic', 'Other'],
+      default: 'Organic'
+    },
+    harvest_date: Date
+  },
+  is_active: {
+    type: Boolean,
+    default: true
+  },
+  discount :{
+    type: Number,
+    default: 0
+  }
+}, {
+  timestamps: true
+});
 
-const Product = mongoose.model("Product", ProductSchema);
+// Add text search index
+productSchema.index({ name: 'text', description: 'text', category: 'text' });
+
+const Product = mongoose.model('Product', productSchema);
+
 export default Product;

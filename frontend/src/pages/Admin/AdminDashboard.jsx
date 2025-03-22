@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import useAuth from "../../hooks/useAuth";
+import { getTokenFromCookie } from "../../utils/cookies";
 import {
   Users,
   Package,
@@ -17,110 +18,115 @@ import {
   Bell,
   Search,
   Zap,
+  FileText,
 } from "lucide-react";
 import axiosInstance from "../../context/axiosInstance";
 
 function AdminDashboard() {
+  const token = getTokenFromCookie();
+  console.log(token)
   const { user } = useAuth();
-  console.log(user)
+
+  // Add console.log to debug user state
+  useEffect(() => {
+    console.log('Current user state:', user);
+  }, [user]);
+
   const [stats, setStats] = useState({
     pendingDocuments: 0,
-    totalFarmers: 24,
-    totalProducts: 156,
-    activeOrders: 38,
-    certificatesIssued: 19,
-    totalRevenue: 328450,
+    totalFarmers: 0,
+    totalProducts: 0,
+    activeOrders: 0,
+    certificatesIssued: 0,
+    totalRevenue: 0,
   });
 
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
 
-  useEffect(() => {
-    // Fetch dashboard stats
-    const fetchStats = async () => {
-      if (!user || user.role !== "admin") return;
+  const fetchDashboardStats = async () => {
+    const token = getTokenFromCookie();
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Debug log for token
+      console.log('Token available:', !!token);
+      console.log('User role:', user?.role);
 
-      try {
-        setIsLoading(true);
-        // Fetch pending documents count
-        const docsResponse = await axiosInstance.get("/documents/pending/all");
-
-        setStats((prev) => ({
-          ...prev,
-          pendingDocuments: docsResponse.data.length,
-        }));
-
-        // Add more stat fetching as needed
-      } catch (error) {
-        console.error("Error fetching admin stats:", error);
-      } finally {
-        // Simulate loading for demo purposes
-        setTimeout(() => setIsLoading(false), 800);
+      if (!token) {
+        setError('Authentication required');
+        return;
       }
-    };
 
-    fetchStats();
-  }, [user]);
-
-  // Recent activity data
-  const recentActivity = [
-    {
-      type: "document_verified",
-      title: "Document verified",
-      detail: "Farmer certificate for Rohit Sharma",
-      time: "2 minutes ago",
-    },
-    {
-      type: "new_farmer",
-      title: "New farmer registered",
-      detail: "Rajesh Kumar joined as organic farmer",
-      time: "1 hour ago",
-    },
-    {
-      type: "product_added",
-      title: "New product added",
-      detail: "Organic rice listed by Farm Fresh Organics",
-      time: "3 hours ago",
-    },
-    {
-      type: "certificate_issued",
-      title: "Certificate issued",
-      detail: "Blockchain certificate #3405 issued",
-      time: "5 hours ago",
-    },
-  ];
-
-  // Simulated chart data
-  const chartData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Farmers",
-        data: [8, 12, 15, 18, 22, 24],
-        color: "#10b981",
-      },
-      {
-        label: "Products",
-        data: [45, 62, 80, 95, 120, 156],
-        color: "#3b82f6",
-      },
-    ],
-  };
-
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case "document_verified":
-        return <FileCheck className="w-4 h-4 text-green-400" />;
-      case "new_farmer":
-        return <Users className="w-4 h-4 text-blue-400" />;
-      case "product_added":
-        return <Package className="w-4 h-4 text-purple-400" />;
-      case "certificate_issued":
-        return <ShieldCheck className="w-4 h-4 text-yellow-400" />;
-      default:
-        return <Bell className="w-4 h-4 text-gray-400" />;
+      // Make sure to use the correct authorization header format
+      const response = await axiosInstance.get('/admin/dashboard/stats', {
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Debug log for response
+      console.log('API Response:', response.data);
+      
+      if (response.data) {
+        setStats(prevStats => ({
+          ...prevStats,
+          pendingDocuments: response.data.pendingDocuments ?? 0,
+          totalFarmers: response.data.totalFarmers ?? 0,
+          totalProducts: response.data.totalProducts ?? 0,
+          activeOrders: response.data.activeOrders ?? 0,
+          certificatesIssued: response.data.certificatesIssued ?? 0,
+          totalRevenue: response.data.totalRevenue ?? 0,
+        }));
+      }
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        token: !!user?.token
+      });
+      
+      let errorMessage = 'Failed to fetch dashboard statistics';
+      
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = 'Your session has expired. Please log in again.';
+            break;
+          case 403:
+            errorMessage = 'You are not authorized to view this data. Admin access required.';
+            break;
+          case 500:
+            errorMessage = 'Server error. Please try again later';
+            break;
+          default:
+            errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage = 'Unable to reach the server. Please check your connection.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Update the useEffect to include better checks
+  useEffect(() => {
+    if (user && token) {
+      console.log('Initiating fetch with token');
+      fetchDashboardStats();
+    } else {
+      console.log('No user or token available');
+      setError('Please log in to view dashboard statistics');
+      setIsLoading(false);
+    }
+  }, [user]);
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -135,7 +141,7 @@ function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-[#0a1f1a] via-[#0a2018] to-[#0c2a22]">
       <Navbar />
 
-      <div className="container mx-auto px-4 pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
         {/* Admin Header with Search */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
           <motion.div
@@ -177,203 +183,193 @@ function AdminDashboard() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Key Metrics */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="col-span-1 lg:col-span-3 grid grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 transition-all hover:translate-y-[-2px]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-emerald-200 font-medium text-sm">
-                    Pending Documents
-                  </p>
-                  <h3 className="text-3xl font-bold text-white mt-1">
-                    {isLoading ? (
-                      <div className="h-9 w-16 bg-[#1a3a32] animate-pulse rounded"></div>
-                    ) : (
-                      stats.pendingDocuments
-                    )}
-                  </h3>
-                </div>
-                <div className="p-2 bg-amber-400/30 rounded-lg">
-                  <Clock className="w-5 h-5 text-amber-300" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {isLoading ? (
+            // Show loading skeletons
+            Array(6).fill(null).map((_, index) => (
+              <div 
+                key={index}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="animate-pulse">
+                  <div className="h-4 bg-emerald-500/20 rounded w-1/3 mb-2"></div>
+                  <div className="h-8 bg-emerald-500/20 rounded w-2/3"></div>
                 </div>
               </div>
-              <div className="mt-4 flex items-center justify-between">
-                <p className="text-emerald-100/80 text-xs">Requires verification</p>
-                <Link
-                  to="/admin/verify-documents"
-                  className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
-                >
-                  Verify <ChevronRight className="w-3 h-3 ml-1" />
-                </Link>
+            ))
+          ) : error ? (
+            // Show error message
+            <div className="col-span-full">
+              <div className="bg-red-500/20 text-red-300 p-4 rounded-xl border border-red-500/30">
+                {error}
               </div>
             </div>
+          ) : (
+            // Show actual stats
+            <>
+              {/* Pending Documents Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Pending Documents</p>
+                    <h3 className="text-2xl font-bold text-white mt-2">{stats.pendingDocuments}</h3>
+                  </div>
+                  <div className="p-2 bg-orange-500/30 rounded-lg">
+                    <FileText className="w-6 h-6 text-orange-300" />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-emerald-100/80 text-xs">Requires verification</p>
+                  <Link
+                    to="/admin/verify-documents"
+                    className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
+                  >
+                    Verify <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
+                </div>
+              </motion.div>
 
-            <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 transition-all hover:translate-y-[-2px]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-emerald-200 font-medium text-sm">
-                    Total Farmers
-                  </p>
-                  <h3 className="text-3xl font-bold text-white mt-1">
-                    {isLoading ? (
-                      <div className="h-9 w-16 bg-[#1a3a32] animate-pulse rounded"></div>
-                    ) : (
-                      stats.totalFarmers
-                    )}
-                  </h3>
+              {/* Total Farmers Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Total Farmers</p>
+                    <h3 className="text-2xl font-bold text-white mt-2">{stats.totalFarmers}</h3>
+                  </div>
+                  <div className="p-2 bg-emerald-500/30 rounded-lg">
+                    <Users className="w-6 h-6 text-emerald-300" />
+                  </div>
                 </div>
-                <div className="p-2 bg-sky-500/30 rounded-lg">
-                  <Users className="w-5 h-5 text-sky-300" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1"></div>
+                <div className="mt-4 flex items-center justify-between">
                   <p className="text-emerald-100/80 text-xs">12 new this month</p>
+                  <Link
+                    to="/admin/users"
+                    className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
+                  >
+                    View all <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
                 </div>
-                <Link
-                  to="/admin/users"
-                  className="text-xs flex items-center text-sky-300 hover:text-sky-200 transition-colors"
-                >
-                  View all <ChevronRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
+              </motion.div>
 
-            <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 transition-all hover:translate-y-[-2px]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-emerald-200 font-medium text-sm">
-                    Total Products
-                  </p>
-                  <h3 className="text-3xl font-bold text-white mt-1">
-                    {isLoading ? (
-                      <div className="h-9 w-16 bg-[#1a3a32] animate-pulse rounded"></div>
-                    ) : (
-                      stats.totalProducts
-                    )}
-                  </h3>
+              {/* Total Products Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Total Products</p>
+                    <h3 className="text-2xl font-bold text-white mt-2">{stats.totalProducts}</h3>
+                  </div>
+                  <div className="p-2 bg-purple-500/30 rounded-lg">
+                    <Package className="w-6 h-6 text-purple-300" />
+                  </div>
                 </div>
-                <div className="p-2 bg-emerald-500/30 rounded-lg">
-                  <Package className="w-5 h-5 text-emerald-300" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1"></div>
+                <div className="mt-4 flex items-center justify-between">
                   <p className="text-emerald-100/80 text-xs">36 new this month</p>
+                  <Link
+                    to="/admin/products"
+                    className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
+                  >
+                    View all <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
                 </div>
-                <Link
-                  to="/admin/products"
-                  className="text-xs flex items-center text-emerald-300 hover:text-emerald-200 transition-colors"
-                >
-                  View all <ChevronRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
+              </motion.div>
 
-            <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 transition-all hover:translate-y-[-2px]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-emerald-200 font-medium text-sm">
-                    Active Orders
-                  </p>
-                  <h3 className="text-3xl font-bold text-white mt-1">
-                    {isLoading ? (
-                      <div className="h-9 w-16 bg-[#1a3a32] animate-pulse rounded"></div>
-                    ) : (
-                      stats.activeOrders
-                    )}
-                  </h3>
+              {/* Active Orders Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Active Orders</p>
+                    <h3 className="text-2xl font-bold text-white mt-2">{stats.activeOrders}</h3>
+                  </div>
+                  <div className="p-2 bg-blue-500/30 rounded-lg">
+                    <ShoppingCart className="w-6 h-6 text-blue-300" />
+                  </div>
                 </div>
-                <div className="p-2 bg-purple-500/30 rounded-lg">
-                  <ShoppingCart className="w-5 h-5 text-purple-300" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-orange-400 mr-1"></div>
+                <div className="mt-4 flex items-center justify-between">
                   <p className="text-emerald-100/80 text-xs">8 need attention</p>
+                  <Link
+                    to="/admin/orders"
+                    className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
+                  >
+                    View all <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
                 </div>
-                <Link
-                  to="/admin/orders"
-                  className="text-xs flex items-center text-purple-300 hover:text-purple-200 transition-colors"
-                >
-                  View all <ChevronRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
+              </motion.div>
 
-            <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 transition-all hover:translate-y-[-2px]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-emerald-200 font-medium text-sm">
-                    Certificates Issued
-                  </p>
-                  <h3 className="text-3xl font-bold text-white mt-1">
-                    {isLoading ? (
-                      <div className="h-9 w-16 bg-[#1a3a32] animate-pulse rounded"></div>
-                    ) : (
-                      stats.certificatesIssued
-                    )}
-                  </h3>
+              {/* Certificates Issued Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Certificates Issued</p>
+                    <h3 className="text-2xl font-bold text-white mt-2">{stats.certificatesIssued}</h3>
+                  </div>
+                  <div className="p-2 bg-yellow-500/30 rounded-lg">
+                    <ShieldCheck className="w-6 h-6 text-yellow-300" />
+                  </div>
                 </div>
-                <div className="p-2 bg-yellow-500/30 rounded-lg">
-                  <ShieldCheck className="w-5 h-5 text-yellow-300" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1"></div>
+                <div className="mt-4 flex items-center justify-between">
                   <p className="text-emerald-100/80 text-xs">All valid and active</p>
+                  <Link
+                    to="/admin/certificates"
+                    className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
+                  >
+                    View all <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
                 </div>
-                <Link
-                  to="/admin/certificates"
-                  className="text-xs flex items-center text-yellow-300 hover:text-yellow-200 transition-colors"
-                >
-                  View all <ChevronRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
+              </motion.div>
 
-            <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 transition-all hover:translate-y-[-2px]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-emerald-200 font-medium text-sm">
-                    Total Revenue
-                  </p>
-                  <h3 className="text-3xl font-bold text-white mt-1">
-                    {isLoading ? (
-                      <div className="h-9 w-36 bg-[#1a3a32] animate-pulse rounded"></div>
-                    ) : (
-                      formatCurrency(stats.totalRevenue)
-                    )}
-                  </h3>
+              {/* Total Revenue Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] p-6 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-900/30"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Total Revenue</p>
+                    <h3 className="text-2xl font-bold text-white mt-2">{formatCurrency(stats.totalRevenue)}</h3>
+                  </div>
+                  <div className="p-2 bg-green-500/30 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-green-300" />
+                  </div>
                 </div>
-                <div className="p-2 bg-teal-500/30 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-teal-300" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1"></div>
+                <div className="mt-4 flex items-center justify-between">
                   <p className="text-emerald-100/80 text-xs">+18% from last month</p>
+                  <Link
+                    to="/admin/finance"
+                    className="text-xs flex items-center text-amber-300 hover:text-amber-200 transition-colors"
+                  >
+                    View report <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
                 </div>
-                <Link
-                  to="/admin/finance"
-                  className="text-xs flex items-center text-teal-300 hover:text-teal-200 transition-colors"
-                >
-                  View report <ChevronRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
-          </motion.div>
+              </motion.div>
+            </>
+          )}
         </div>
 
         {/* Quick Links */}

@@ -8,6 +8,9 @@ import FarmerDashboard from "./FarmerDashboard";
 import DocumentUpload from "./DocumentUpload";
 import FarmerCertificate from "./FarmerCertificate";
 import OrderList from "./OrderList";
+// import AddProduct from "./AddProduct";
+import EditProduct from "./Editproduct";
+import NotFound from "../NotFound";
 // import OrderList from './OrderList';
 
 const FarmerRoutes = () => {
@@ -17,11 +20,11 @@ const FarmerRoutes = () => {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/products" element={<ProductList />} />
       <Route path="/add-product" element={<AddProduct />} />
-      {/* <Route path="/products" element={<Products />} /> */}
-      {/* <Route path="/products/add" element={<AddProduct />} /> */}
+      <Route path="/edit-product/:productId" element={<EditProduct />} />
       <Route path="/documents" element={<DocumentUpload />} />
       <Route path="/certificate/:certificateId" element={<FarmerCertificate />}/>
       <Route path="/orders" element={<OrderList />}/>
+      <Route path="/*" element={<NotFound />} />
     </Routes>
   );
 };

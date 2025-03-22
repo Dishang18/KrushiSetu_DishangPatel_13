@@ -52,6 +52,7 @@ const ConsumerShop = () => {
       image: "🍅",
       isBestseller: true,
       isOrganic: true,
+      discount: 10,
     },
     {
       id: 2,
@@ -65,6 +66,7 @@ const ConsumerShop = () => {
       image: "🥬",
       isBestseller: false,
       isOrganic: true,
+      discount: 0,
     },
     {
       id: 3,
@@ -78,6 +80,7 @@ const ConsumerShop = () => {
       image: "🌾",
       isBestseller: true,
       isOrganic: false,
+      discount: 5,
     },
     {
       id: 4,
@@ -91,6 +94,7 @@ const ConsumerShop = () => {
       image: "🥭",
       isBestseller: true,
       isOrganic: true,
+      discount: 15,
     },
     {
       id: 5,
@@ -104,6 +108,7 @@ const ConsumerShop = () => {
       image: "🥛",
       isBestseller: false,
       isOrganic: true,
+      discount: 0,
     },
     {
       id: 6,
@@ -117,6 +122,7 @@ const ConsumerShop = () => {
       image: "🌶️",
       isBestseller: false,
       isOrganic: false,
+      discount: 20,
     },
     {
       id: 7,
@@ -130,6 +136,7 @@ const ConsumerShop = () => {
       image: "🫛",
       isBestseller: false,
       isOrganic: true,
+      discount: 0,
     },
     {
       id: 8,
@@ -143,6 +150,7 @@ const ConsumerShop = () => {
       image: "🥚",
       isBestseller: true,
       isOrganic: true,
+      discount: 10,
     },
   ];
 
@@ -358,7 +366,21 @@ const ConsumerShop = () => {
                       <h3 className="font-medium text-gray-900">{product.name}</h3>
                       <p className="text-gray-500 text-sm mt-1">{product.farm}</p>
                       <div className="flex justify-between items-center mt-3">
-                        <span className="font-bold text-gray-900">₹{product.price}/{product.unit}</span>
+                        <div>
+                          {product.discount > 0 ? (
+                            <div>
+                              <span className="line-through text-gray-400 text-sm">₹{product.price}/{product.unit}</span>
+                              <span className="font-bold text-gray-900 block">
+                                ₹{(product.price * (1 - product.discount/100)).toFixed(2)}/{product.unit}
+                              </span>
+                              <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                {product.discount}% OFF
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="font-bold text-gray-900">₹{product.price}/{product.unit}</span>
+                          )}
+                        </div>
                         <button className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium flex items-center">
                           <ShoppingCart className="w-4 h-4 mr-1" />
                           Add

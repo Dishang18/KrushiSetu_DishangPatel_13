@@ -4,41 +4,47 @@ import User from '../models/userModel.js';
 // Middleware to authenticate JWT tokens
 export const authenticate = async (req, res, next) => {
   try {
-    // Get token from header or query parameter
-    const token = 
-      req.headers.authorization?.split(' ')[1] || 
-      req.query.token || 
-      null;
-
+    // Get token from header
+    const authHeader = req.headers.authorization;
     
-    if (!token) {
-      return res.status(401).json({ message: 'No authentication token provided' });
+    // Log for debugging
+    console.log('Auth Header:', authHeader);
+    
+    // Check for Bearer token
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Please provide a valid authentication token' });
     }
+    
+    const token = authHeader.split(' ')[1];
     
     try {
       // Verify token
+      console.log
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      console.log('Token decoded:', decoded);
       
       // Find user by id
       const user = await User.findById(decoded.id);
       
       if (!user) {
-        return res.status(401).json({ message: 'User not found' });
+        return res.status(401).json({ message: 'User not found or deleted' });
       }
       
       // Add user to request object
       req.user = {
-        id: user._id,
+        _id: user._id, // Use _id to match MongoDB's ID field
+        id: user._id,  // Keep this for backward compatibility
         email: user.email,
         role: user.role,
         name: user.name
       };
 
-      console.log("authenticated " + user.role)
+      console.log("User authenticated:", user.name, "- Role:", user.role);
       next();
     } catch (error) {
       console.error('JWT verification error:', error);
-      return res.status(401).json({ message: 'Invalid token' });
+      return res.status(401).json({ message: 'Invalid or expired token' });
     }
   } catch (error) {
     console.error('Authentication middleware error:', error);
