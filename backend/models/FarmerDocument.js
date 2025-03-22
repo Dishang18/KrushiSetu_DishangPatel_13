@@ -103,7 +103,7 @@ FarmerDocumentSchema.methods.updateVerificationStatus = function() {
   } else if (this.documents.aadhaar.status === 'verified' && this.documents.certificate.status === 'verified') {
     this.verificationStatus = this.certificateId ? 'certified' : 'complete';
   } else {
-    this.verificationStatus = 'partial';
+    this.verificationStatus = 'pending';
   }
   
   return this.verificationStatus;

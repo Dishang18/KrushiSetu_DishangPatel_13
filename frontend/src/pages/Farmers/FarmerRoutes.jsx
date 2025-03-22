@@ -13,11 +13,10 @@ import FarmerCertificate from "./FarmerCertificate";
 const FarmerRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
+      <Route path="/" element={<FarmerDashboard />} />
       <Route path="/profile" element={<FarmerProfile />} />
       <Route path="/products" element={<ProductList />} />
       <Route path="/add-product" element={<AddProduct />} />
-      <Route path="/dashboard" element={<FarmerDashboard />} />
       {/* <Route path="/products" element={<Products />} /> */}
       {/* <Route path="/products/add" element={<AddProduct />} /> */}
       <Route path="/documents" element={<DocumentUpload />} />

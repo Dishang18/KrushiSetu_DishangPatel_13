@@ -2,9 +2,14 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signInWithGoogle } from "../firebase";
 import Navbar from "../components/Navbar";
-import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, UserPlus, Mail, Lock, User, AlertCircle } from "lucide-react";
+import { showError, showSuccess, showLoading, updateLoadingToast } from "../components/Notification";
+import { useDispatch } from "react-redux";
+import { loginStart, loginSuccess } from "../redux/slices/userSlice";
+import { setTokenCookie, setRefreshTokenCookie } from "../utils/cookies";
+import useAuth from "../hooks/useAuth";
+import { useAlerts } from "../components/AlertMessage";
 
 // Define API base URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -19,34 +24,37 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { getHomeRoute } = useAuth();
+  const { showError: showAlertError } = useAlerts();
 
   const validateForm = () => {
     // Email validation
     if (!email) {
-      toast.error("Please enter your email");
+      showError("Please enter your email");
       return false;
     }
     
     // Password validation
     if (!password) {
-      toast.error("Please enter a password");
+      showError("Please enter a password");
       return false;
     }
     
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      showError("Password must be at least 6 characters");
       return false;
     }
     
     // Password match validation
     if (password !== confirmPassword) {
-      toast.error("Passwords don't match");
+      showError("Passwords don't match");
       return false;
     }
     
     // Terms agreement
     if (!agreed) {
-      toast.error("Please agree to the Terms of Service and Privacy Policy");
+      showError("Please agree to the Terms of Service and Privacy Policy");
       return false;
     }
     
@@ -61,6 +69,10 @@ const RegisterPage = () => {
     }
     
     setLoading(true);
+    
+    // Show loading toast
+    const toastId = showLoading("Creating your account...");
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
@@ -82,15 +94,21 @@ const RegisterPage = () => {
         throw new Error(data.message || "Registration failed");
       }
       
-      toast.success("Registration successful! Please log in.");
-      navigate("/login");
+      updateLoadingToast(toastId, "success", "Registration successful! Please log in.");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (error) {
       console.error("Registration error:", error);
       
       if (error.message === "User already exists") {
-        toast.error("This email is already registered. Please log in instead.");
+        updateLoadingToast(toastId, "error", "This email is already registered. Please log in instead.");
+      } else if (error.message.includes("network") || error.name === "TypeError") {
+        // Network error - show more visible alert
+        updateLoadingToast(toastId, "error", "Connection error");
+        showAlertError("Unable to connect to the server. Please check your internet connection and try again.", 10000);
       } else {
-        toast.error(error.message || "Registration failed. Please try again.");
+        updateLoadingToast(toastId, "error", error.message || "Registration failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -99,11 +117,16 @@ const RegisterPage = () => {
 
   const handleGoogleSignIn = async () => {
     if (!agreed) {
-      toast.error("Please agree to the Terms of Service and Privacy Policy");
+      showError("Please agree to the Terms of Service and Privacy Policy");
       return;
     }
     
     setLoading(true);
+    dispatch(loginStart());
+    
+    // Show loading toast
+    const toastId = showLoading("Signing in with Google...");
+    
     try {
       const result = await signInWithGoogle();
       const idToken = await result.user.getIdToken();
@@ -123,37 +146,39 @@ const RegisterPage = () => {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || "Registration with Google failed");
+        throw new Error(data.message || "Google registration failed");
       }
       
-      if (data.isExistingUser) {
-        // User already exists
-        toast.success("You are already registered with Google. Redirecting to login.");
-        navigate("/login");
-        return;
-      }
-      
-      // Store token and user info for new user
-      localStorage.setItem("token", data.token || idToken);
+      // Store token in cookies
+      setTokenCookie(data.token || idToken);
       if (data.refreshToken) {
-        localStorage.setItem("refreshToken", data.refreshToken);
+        setRefreshTokenCookie(data.refreshToken);
       }
       
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store user data in Redux
+      dispatch(loginSuccess(data.user));
       
-      toast.success("Registration with Google successful!");
-      
-      // Redirect based on role
-      if (data.user.role === "admin") {
-        navigate("/admin");
-      } else if (data.user.role === "farmer") {
-        navigate("/farmer/");
+      // Handle successful registration
+      if (data.isExistingUser) {
+        updateLoadingToast(toastId, "success", "Welcome back! Logging you in...");
       } else {
-        navigate("/consumer/");
+        updateLoadingToast(toastId, "success", "Account created successfully!");
       }
+      
+      // Redirect based on role using getHomeRoute
+      setTimeout(() => {
+        navigate(getHomeRoute());
+      }, 1500);
     } catch (error) {
       console.error("Google sign-in error:", error);
-      toast.error(error.message || "Failed to register with Google");
+      
+      if (error.message.includes("network") || error.name === "TypeError") {
+        // Network error - show more visible alert
+        updateLoadingToast(toastId, "error", "Connection error");
+        showAlertError("Unable to connect to the server. Please check your internet connection and try again.", 10000);
+      } else {
+        updateLoadingToast(toastId, "error", error.message || "Registration with Google failed");
+      }
     } finally {
       setLoading(false);
     }

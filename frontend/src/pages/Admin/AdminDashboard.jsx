@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import { useAuth } from "../../contexts/AuthContext";
+import useAuth from "../../hooks/useAuth";
 import {
   Users,
   Package,
@@ -22,6 +22,7 @@ import axiosInstance from "../../context/axiosInstance";
 
 function AdminDashboard() {
   const { user } = useAuth();
+  console.log(user)
   const [stats, setStats] = useState({
     pendingDocuments: 0,
     totalFarmers: 24,

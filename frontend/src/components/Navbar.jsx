@@ -11,23 +11,20 @@ import {
   X,
 } from "lucide-react";
 import { ChevronDown, User } from "lucide-react";
+import useAuth from "../hooks/useAuth";
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Check if the user is authenticated (Example: from localStorage)
-  const isAuthenticated = localStorage.getItem("token") !== null; // Adjust based on your auth logic
+  
+  // Use our Redux-based auth hook instead of localStorage
+  const { isLoggedIn, user, logout } = useAuth();
 
   const navItems = [
     { name: "Home", path: "/", icon: <Home size={18} /> },
-    {
-      name: "Marketplace",
-      path: "/marketplace",
-      icon: <ShoppingBasket size={18} />,
-    },
-    { name: "Verified Farmers", path: "/farmers", icon: <Users size={18} /> },
+    { name: "Marketplace", path: "/marketplace", icon: <Info size={18} /> },
+    { name: "Trusted Farmers", path: "/farmers", icon: <Info size={18} /> },
     { name: "About", path: "/about", icon: <Info size={18} /> },
   ];
 
@@ -35,7 +32,7 @@ function Navbar() {
 
   // Hide navbar on login and register pages when user is authenticated
   if (
-    isAuthenticated &&
+    isLoggedIn &&
     (location.pathname === "/login" || location.pathname === "/register")
   ) {
     return null;
@@ -101,37 +98,40 @@ function Navbar() {
       </nav>
 
       {/* Logout Button */}
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <div>
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative group">
-              <button className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary" />
+              <button className="flex items-center space-x-1 text-gray-300 hover:text-white">
+                <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
+                  <User className="h-4 w-4 text-teal-400" />
                 </div>
+                <span className="text-sm mr-1">
+                  {user?.name || user?.email?.split('@')[0] || 'User'}
+                </span>
                 <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
               </button>
 
-              <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible transition-all">
+              <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md shadow-lg py-1 bg-[#1a332e] ring-1 ring-black ring-opacity-5 opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible transition-all">
                 <Link
                   to="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="block px-4 py-2 text-sm text-gray-300 hover:bg-teal-500/20"
                 >
                   Profile
                 </Link>
                 <Link
                   to="/account"
-                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="block px-4 py-2 text-sm text-gray-300 hover:bg-teal-500/20"
                 >
                   Account
                 </Link>
-                <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                <hr className="my-1 border-gray-700" />
                 <button
                   onClick={() => {
-                    localStorage.removeItem("token"); // Remove auth token
+                    logout(); // Use our logout function from useAuth
                     navigate("/login");
                   }}
-                  className="w-full text-left block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-teal-500/20"
                 >
                   Sign out
                 </button>

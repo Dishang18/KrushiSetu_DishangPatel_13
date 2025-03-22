@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import useAuth from '../../hooks/useAuth';
 import axiosInstance from '../../context/axiosInstance';
 
 function DocumentVerification() {

@@ -2,9 +2,14 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signInWithGoogle } from "../firebase";
 import Navbar from "../components/Navbar";
-import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, LogIn, Mail, Lock } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { loginStart, loginSuccess, loginFailure } from "../redux/slices/userSlice";
+import { setTokenCookie, setRefreshTokenCookie } from "../utils/cookies";
+import useAuth from "../hooks/useAuth";
+import { showError, showSuccess, showLoading, updateLoadingToast } from "../components/Notification";
+import { useAlerts } from "../components/AlertMessage";
 
 // Define API base URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -15,22 +20,30 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { getHomeRoute } = useAuth();
+  const { showError: showAlertError } = useAlerts();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate form fields
     if (!email) {
-      toast.error("Please enter your email");
+      showError("Please enter your email");
       return;
     }
     
     if (!password) {
-      toast.error("Please enter your password");
+      showError("Please enter your password");
       return;
     }
     
+    dispatch(loginStart());
     setLoading(true);
+    
+    // Show loading toast
+    const toastId = showLoading("Logging in...");
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
@@ -49,35 +62,37 @@ const Login = () => {
         throw new Error(data.message || "Login failed");
       }
       
-      // Store token and user info
-      localStorage.setItem("token", data.token);
+      // Store token in cookies
+      setTokenCookie(data.token);
       if (data.refreshToken) {
-        localStorage.setItem("refreshToken", data.refreshToken);
+        setRefreshTokenCookie(data.refreshToken);
       }
       
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store user data in Redux
+      dispatch(loginSuccess(data.user));
       
-      // Show success message
-      toast.success("Login successful!");
+      // Update loading toast to success
+      updateLoadingToast(toastId, "success", "Login successful!");
       
       // Log activity
       console.log("User logged in:", data.user.email);
       
-      // Redirect based on role
-      if (data.user.role === "admin") {
-        navigate("/admin/");
-      } else if (data.user.role === "farmer") {
-        navigate("/farmer/dashboard");
-      } else {
-        navigate("/consumer/");
-      }
+      // Redirect using getHomeRoute for consistency
+      navigate(getHomeRoute());
     } catch (error) {
       console.error("Login error:", error);
       
+      dispatch(loginFailure(error.message || "Login failed"));
+      
+      // Update loading toast to error
       if (error.message === "Invalid credentials") {
-        toast.error("Invalid email or password");
+        updateLoadingToast(toastId, "error", "Invalid email or password");
+      } else if (error.message.includes("network") || error.name === "TypeError") {
+        // Network error - show more visible alert
+        updateLoadingToast(toastId, "error", "Connection error");
+        showAlertError("Unable to connect to the server. Please check your internet connection and try again.", 10000);
       } else {
-        toast.error(error.message || "Login failed. Please try again.");
+        updateLoadingToast(toastId, "error", error.message || "Login failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -85,7 +100,12 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    dispatch(loginStart());
     setLoading(true);
+    
+    // Show loading toast
+    const toastId = showLoading("Signing in with Google...");
+    
     try {
       const result = await signInWithGoogle();
       const idToken = await result.user.getIdToken();
@@ -104,31 +124,35 @@ const Login = () => {
         throw new Error(data.message || "Google authentication failed");
       }
       
-      // Store token and user info
-      localStorage.setItem("token", data.token || idToken);
+      // Store token in cookies
+      setTokenCookie(data.token || idToken);
       if (data.refreshToken) {
-        localStorage.setItem("refreshToken", data.refreshToken);
+        setRefreshTokenCookie(data.refreshToken);
       }
       
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store user data in Redux
+      dispatch(loginSuccess(data.user));
       
-      // Show success message
-      toast.success("Login with Google successful!");
+      // Update loading toast to success
+      updateLoadingToast(toastId, "success", "Login with Google successful!");
       
       // Log activity
       console.log("User logged in with Google:", data.user.email);
       
-      // Redirect based on role
-      if (data.user.role === "admin") {
-        navigate("/admin");
-      } else if (data.user.role === "farmer") {
-        navigate("/farmer/dashboard");
-      } else {
-        navigate("/");
-      }
+      // Redirect using getHomeRoute for consistency
+      navigate(getHomeRoute());
     } catch (error) {
       console.error("Google sign-in error:", error);
-      toast.error(error.message || "Failed to login with Google");
+      dispatch(loginFailure(error.message || "Failed to login with Google"));
+      
+      // Update loading toast to error
+      if (error.message.includes("network") || error.name === "TypeError") {
+        // Network error - show more visible alert
+        updateLoadingToast(toastId, "error", "Connection error");
+        showAlertError("Unable to connect to the server. Please check your internet connection and try again.", 10000);
+      } else {
+        updateLoadingToast(toastId, "error", error.message || "Failed to login with Google");
+      }
     } finally {
       setLoading(false);
     }

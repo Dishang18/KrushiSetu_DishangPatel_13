@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Upload, FileCheck, FileX, AlertCircle } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import useAuth from '../../hooks/useAuth';
 import axiosInstance from '../../context/axiosInstance';
 
 function DocumentUpload() {
@@ -217,7 +217,7 @@ function DocumentUpload() {
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <Link 
-            to="/farmer/dashboard"
+            to="/farmer/"
             className="inline-flex items-center text-teal-400 hover:text-teal-300 mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, CheckCircle, Calendar, User, FileText, ExternalLink } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import useAuth from '../../hooks/useAuth';
 import axiosInstance from '../../context/axiosInstance';
 
 function FarmerCertificate() {
