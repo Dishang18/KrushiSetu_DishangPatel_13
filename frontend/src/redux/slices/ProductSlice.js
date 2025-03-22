@@ -31,6 +31,7 @@ export const getFarmerProducts = createAsyncThunk(
   'products/getFarmerProducts',
   async ({farmerId, page = 1, limit = 6}, { rejectWithValue }) => {
     try {
+      console.log("Farmer ID:", farmerId);
       const token = getTokenFromCookie();
       
       const response = await axios.get(`${API_URL}/api/products/farmer/${farmerId}?page=${page}&limit=${limit}`, {

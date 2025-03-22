@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "./Dashboard";
-import ProfilePage from "../profile/ProfilePage";
+import ProfilePage from "../Profile/ProfilePage";
 import ProductList from "./ProductList";
 import AddProduct from "./AddProduct";
 import FarmerDashboard from "./FarmerDashboard";

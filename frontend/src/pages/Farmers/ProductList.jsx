@@ -95,10 +95,15 @@ function ProductList() {
 
   // Load products on component mount and when user data becomes available
   useEffect(() => {
-    const farmerId = user?.id || user?._id;
+    const farmerId = user?._id;
+    console.log("Farmer ID:", farmerId);
 
     if (farmerId) {
-      dispatch(getFarmerProducts(farmerId))
+      dispatch(getFarmerProducts({ 
+            farmerId: user._id,
+            page: 1,
+            limit: 2
+          }))
         .then(() => {
           setIsInitialLoad(false);
         })

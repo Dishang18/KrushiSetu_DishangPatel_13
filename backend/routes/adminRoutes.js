@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middleware/authMiddleware.js';
 import User from '../models/userModel.js';
 import FarmerDocument from '../models/FarmerDocument.js';
+import Product from '../models/productModel.js';
 
 const router = express.Router();
 
@@ -49,6 +50,39 @@ router.get('/dashboard/stats', authenticate, async (req, res) => {
       });
     } catch (error) {
       console.error('Error counting certificates:', error);
+    }
+
+    try {
+      // Get certified farmer IDs first
+      const certifiedFarmers = await FarmerDocument.find({
+        verificationStatus: 'certified'
+      }).select('farmer');
+
+      // Extract farmer IDs
+      const certifiedFarmerIds = certifiedFarmers.map(doc => doc.farmer);
+
+      // Count products only from certified farmers
+      stats.totalProducts = await Product.countDocuments({
+        farmer: { $in: certifiedFarmerIds }
+      });
+      
+      // Calculate revenue only from certified farmers' products
+      const products = await Product.find({
+        farmer: { $in: certifiedFarmerIds }
+      });
+
+      stats.totalRevenue = products.reduce((total, product) => {
+        return total + (product.price * product.quantity);
+      }, 0);
+
+      console.log('Certified farmers products count:', stats.totalProducts);
+      console.log('Revenue from certified farmers:', stats.totalRevenue);
+    } catch (error) {
+      console.error('Error counting certified farmers products:', error);
+      console.error('Detailed error:', {
+        message: error.message,
+        stack: error.stack
+      });
     }
 
     console.log('Stats gathered:', stats);
