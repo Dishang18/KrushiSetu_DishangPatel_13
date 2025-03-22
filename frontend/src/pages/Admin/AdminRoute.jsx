@@ -6,6 +6,7 @@ import Certificates from "./Certificates";
 import Farmers from "./Farmers";
 import ProfilePage from "../profile/ProfilePage";
 import NotFound from "../NotFound";
+import AdminProducts from "./AdminProducts";
 
 const AdminRoutes = () => {
   return (
@@ -15,6 +16,7 @@ const AdminRoutes = () => {
       <Route path="/certificates" element={<Certificates />} />
       <Route path="/users" element={<Farmers />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/products" element={<AdminProducts />} />
       <Route path="/*" element={<NotFound />} />
     </Routes>
   );

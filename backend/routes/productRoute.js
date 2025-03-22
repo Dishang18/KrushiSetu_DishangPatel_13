@@ -6,7 +6,8 @@ import {
   getProductById,
   getProductImage,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getALLProducts
 } from '../controllers/productController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 import upload from '../middleware/upload.js';
@@ -22,9 +23,13 @@ router.get('/', getProducts);
 // Get products by farmer ID 
 router.get('/farmer/:id', authenticate, getFarmerProducts);
 
+// Get all farmers with product counts (MUST BE BEFORE /:id route)
+router.get('/getallFarmer', authenticate, getALLProducts);
+
 // Get product image
 router.get('/image/:filename', getProductImage);
 
+// Get product by ID (MUST BE AFTER specific routes)
 router.get('/:id', getProductById);
 router.put('/:id', authenticate, upload.single('image'), updateProduct);
 

@@ -122,12 +122,6 @@ function Navbar() {
                 >
                   Profile
                 </Link>
-                <Link
-                  to="/account"
-                  className="block px-4 py-2 text-sm text-gray-300 hover:bg-teal-500/20"
-                >
-                  Account
-                </Link>
                 <hr className="my-1 border-gray-700" />
                 <button
                   onClick={() => {

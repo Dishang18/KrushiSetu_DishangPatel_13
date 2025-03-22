@@ -11,21 +11,10 @@ export const createProduct = createAsyncThunk(
     try {
       const token = getTokenFromCookie();
       
-      if (!token) {
-        return rejectWithValue('Authentication required. Please login again.');
-      }
-
-      // Ensure productData is valid before sending
-      if (!productData || productData.get === undefined) {
-        return rejectWithValue('Invalid form data provided');
-      }
-
-      console.log("Sending product data:", productData);
-      
       const response = await axios.post(`${API_URL}/api/products`, productData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type when sending FormData with files
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
       
@@ -37,14 +26,14 @@ export const createProduct = createAsyncThunk(
   }
 );
 
-// Get products for a specific farmer
+// Get products for a specific farmer with pagination
 export const getFarmerProducts = createAsyncThunk(
   'products/getFarmerProducts',
-  async (farmerId, { rejectWithValue }) => {
+  async ({farmerId, page = 1, limit = 6}, { rejectWithValue }) => {
     try {
-        const token = getTokenFromCookie();
+      const token = getTokenFromCookie();
       
-      const response = await axios.get(`${API_URL}/api/products/farmer/${farmerId}`, {
+      const response = await axios.get(`${API_URL}/api/products/farmer/${farmerId}?page=${page}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -66,13 +55,57 @@ export const getProducts = createAsyncThunk(
     try {
       // Build query string from filters
       const queryString = new URLSearchParams(filters).toString();
-      const url = `${API_URL}/api/products${queryString ? `?${queryString}` : ''}`;
       
-      const response = await axios.get(url);
+      const response = await axios.get(`${API_URL}/api/products?${queryString}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch products'
+      );
+    }
+  }
+);
+
+// Get all farmers with product counts for admin
+export const getAllFarmersWithProductCounts = createAsyncThunk(
+  'products/getAllFarmersWithProductCounts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = getTokenFromCookie();
+      console.log(token)
+      // Fix the endpoint to match the backend route
+      const response = await axios.get(`${API_URL}/api/products/getallFarmer`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch farmers with product counts'
+      );
+    }
+  }
+);
+
+// Get product details by ID
+export const getProductDetails = createAsyncThunk(
+  'products/getProductDetails',
+  async (productId, { rejectWithValue }) => {
+    try {
+      const token = getTokenFromCookie();
+      
+      const response = await axios.get(`${API_URL}/api/products/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log(response.data);
+      return response.data.product;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch product details'
       );
     }
   }
@@ -129,39 +162,21 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
-export const getProductDetails = createAsyncThunk(
-  'products/getProductDetails',
-  async (productId, { rejectWithValue }) => {
-    try {
-      const token = getTokenFromCookie();
-      
-      if (!token) {
-        return rejectWithValue('Authentication required. Please login again.');
-      }
-      
-      const response = await axios.get(`${API_URL}/api/products/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch product details'
-      );
-    }
-  }
-);
-
 // Initial state
 const initialState = {
   products: [],
   farmerProducts: [],
   currentProduct: null,
+  farmers: [], // Add this for admin farmers list
   loading: false,
   error: null,
-  successMessage: null
+  successMessage: null,
+  pagination: {
+    total: 0,
+    page: 1,
+    pages: 1,
+    limit: 6
+  }
 };
 
 // Product slice
@@ -203,6 +218,13 @@ const productSlice = createSlice({
       .addCase(getFarmerProducts.fulfilled, (state, action) => {
         state.loading = false;
         state.farmerProducts = action.payload.data || [];
+        // Store pagination info
+        state.pagination = action.payload.pagination || {
+          total: 0,
+          page: 1,
+          pages: 1,
+          limit: 6
+        };
       })
       .addCase(getFarmerProducts.rejected, (state, action) => {
         state.loading = false;
@@ -279,6 +301,21 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         state.currentProduct = null;
+      })
+      // Get all farmers with product counts (admin)
+      .addCase(getAllFarmersWithProductCounts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllFarmersWithProductCounts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.farmers = action.payload.farmers || [];
+        console.log("Farmers loaded:", state.farmers);
+      })
+      .addCase(getAllFarmersWithProductCounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch farmers';
+        console.error("Error loading farmers:", state.error);
       });
   }
 });
