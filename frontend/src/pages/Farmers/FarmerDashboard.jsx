@@ -38,7 +38,7 @@ function FarmerDashboard() {
             `/documents/farmer/${userId}`
           );
           
-          const docs = response.data;
+          const docs = Array.isArray(response.data) ? response.data : [];
           const status = {
             aadhaar: 'not_uploaded',
             certificate: 'not_uploaded',
@@ -134,7 +134,7 @@ function FarmerDashboard() {
         </motion.div>
 
         {/* Verification Status Banner */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -164,7 +164,7 @@ function FarmerDashboard() {
               </Link>
             )}
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Quick Links */}
         <motion.div
