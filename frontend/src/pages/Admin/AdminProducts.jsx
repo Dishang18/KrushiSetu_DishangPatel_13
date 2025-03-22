@@ -234,7 +234,13 @@ const AdminProducts = () => {
                     <Package className="w-4 h-4 text-emerald-400 mr-2" />
                     <span className="text-white">{farmer.productCount || 0} Products</span>
                   </div>
-                  <button className="text-emerald-400 hover:text-emerald-300 flex items-center">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent double triggering with the parent div click
+                      handleFarmerClick(farmer);
+                    }}
+                    className="text-emerald-400 hover:text-emerald-300 flex items-center"
+                  >
                     View Products <Eye className="ml-1 w-4 h-4" />
                   </button>
                 </div>
@@ -297,7 +303,7 @@ const AdminProducts = () => {
                     <div className="h-40 w-full bg-emerald-800/40 relative flex items-center justify-center">
                       {product.image_url ? (
                         <img 
-                          src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${product.image_url}`} 
+                          src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${product.image_url}`} 
                           alt={product.name} 
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -438,7 +444,7 @@ const AdminProducts = () => {
               <div className="bg-emerald-800/40 h-64 md:h-full flex items-center justify-center p-4">
                 {currentProduct?.image_url ? (
                   <img 
-                    src={`${process.env.REACT_APP_API_URL}${currentProduct.image_url}`}
+                    src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${currentProduct.image_url}`}
                     alt={currentProduct.name} 
                     className="max-w-full max-h-full object-contain rounded-lg"
                   />
@@ -461,7 +467,7 @@ const AdminProducts = () => {
                       </span>
                     </div>
                   </div>
-                  
+{/*                   
                   <div className="flex space-x-2">
                     <button className="p-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-colors">
                       <Edit className="w-5 h-5" />
@@ -469,7 +475,7 @@ const AdminProducts = () => {
                     <button className="p-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors">
                       <Trash2 className="w-5 h-5" />
                     </button>
-                  </div>
+                  </div> */}
                 </div>
                 
                 <p className="text-gray-300 mb-6">
