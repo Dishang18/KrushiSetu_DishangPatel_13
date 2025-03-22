@@ -396,9 +396,9 @@ const Farmers = () => {
                   <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
                     Email
                   </th>
-                  {/* <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
                     Farm Type
-                  </th> */}
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-teal-300 uppercase tracking-wider">
                     Status
                   </th>

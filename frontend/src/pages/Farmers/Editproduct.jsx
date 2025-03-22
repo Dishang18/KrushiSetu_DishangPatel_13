@@ -32,6 +32,7 @@ const EditProduct = () => {
     description: "",
     category: "",
     price: "",
+    discount: "", // Added discount field
     available_quantity: "",
     unit: "kg", // Add default unit
     farmer_id: "",
@@ -62,6 +63,7 @@ const EditProduct = () => {
         description: currentProduct.description || "",
         category: currentProduct.category || "",
         price: currentProduct.price || "",
+        discount: currentProduct.discount || "", // Set discount from product data
         available_quantity: currentProduct.available_quantity || "",
         unit: currentProduct.unit || "kg", // Set unit from product data
         farmer_id: currentProduct.farmer_id || user?.id || "",
@@ -139,6 +141,7 @@ const EditProduct = () => {
       submitFormData.append("description", formData.description);
       submitFormData.append("category", formData.category);
       submitFormData.append("price", formData.price);
+      submitFormData.append("discount", formData.discount); // Added discount to form submission
       submitFormData.append("available_quantity", formData.available_quantity);
       submitFormData.append("unit", formData.unit); // Add unit to form data
       submitFormData.append("farmer_id", formData.farmer_id);
@@ -314,6 +317,18 @@ const EditProduct = () => {
                     onChange={handleInputChange}
                     className="w-full bg-[#1a332e] text-white px-4 py-2.5 rounded-lg border border-teal-500/20 focus:outline-none focus:border-teal-500"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-400 mb-2">Discount (%)</label>
+                  <input
+                    type="number"
+                    name="discount"
+                    value={formData.discount}
+                    onChange={handleInputChange}
+                    min="0" 
+                    max="100"
+                    className="w-full bg-[#1a332e] text-white px-4 py-2.5 rounded-lg border border-teal-500/20 focus:outline-none focus:border-teal-500"
                   />
                 </div>
                 <div>
