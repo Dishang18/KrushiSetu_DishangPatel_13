@@ -12,6 +12,7 @@ import compression from 'compression';
 import { productRoute } from './routes/productRoute.js';
 import { adminRoutes } from './routes/adminRoutes.js';
 import { orderRoutes } from './routes/orderRoutes.js';
+import {predictsRoutes} from './routes/commodityRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -21,7 +22,7 @@ app.use(compression());
 
 // Set up middleware
 app.use(cors({
-  origin: "http://localhost:5173", // Allow frontend origin
+  origin: "http://localhost:5174", // Allow frontend origin
   credentials: true, // Allow cookies (if needed)
 }));
 
@@ -49,6 +50,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/products', productRoute);
 app.use('/api/admin', adminRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api', predictsRoutes);
 
 
 // Connect MongoDB

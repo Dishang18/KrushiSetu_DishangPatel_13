@@ -7,6 +7,7 @@ import ConsumerProductList from './ConsumerProductList';
 import ConsumerShop from './ConsumerShop';
 import Cart from '../Cart';
 import Checkout from './Checkout';
+import PricePredictionTester from './PricePredictionTester';
 // import Cart from './Cart';
 
 const ConsumerRoutes = () => {
@@ -18,6 +19,7 @@ const ConsumerRoutes = () => {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/*" element={<NotFound />} />
+            <Route path="/prediction-tester" element={<PricePredictionTester />} />
         </Routes>
     );
 };
