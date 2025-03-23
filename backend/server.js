@@ -11,7 +11,7 @@ import { initGridFS } from './config/gridfsConfig.js';
 import compression from 'compression';
 import { productRoute } from './routes/productRoute.js';
 import { adminRoutes } from './routes/adminRoutes.js';
-import orderRoutes  from './routes/oderRoutes.js';
+import { orderRoutes } from './routes/orderRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -48,7 +48,8 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/products', productRoute);
 app.use('/api/admin', adminRoutes);
-app.use('/api/order ', orderRoutes);
+app.use('/api/orders', orderRoutes);
+
 
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URL)

@@ -5,6 +5,8 @@ import ProfilePage from '../profile/ProfilePage';
 import NotFound from '../NotFound';
 import ConsumerProductList from './ConsumerProductList';
 import ConsumerShop from './ConsumerShop';
+import Cart from '../Cart';
+import Checkout from './Checkout';
 // import Cart from './Cart';
 
 const ConsumerRoutes = () => {
@@ -13,6 +15,8 @@ const ConsumerRoutes = () => {
             <Route path="/" element={<ConsumerDashboard />} />
             <Route path="/shop" element={<ConsumerShop />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/*" element={<NotFound />} />
         </Routes>
     );

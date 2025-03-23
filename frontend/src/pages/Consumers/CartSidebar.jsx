@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CartSidebar = ({ isOpen, onClose, cart, updateQuantity, removeItem, totalPrice }) => {
   // Store cart in localStorage whenever it changes
@@ -6,12 +7,13 @@ const CartSidebar = ({ isOpen, onClose, cart, updateQuantity, removeItem, totalP
     localStorage.setItem('farmCart', JSON.stringify(cart));
   }, [cart]);
 
+  const navigate = useNavigate();
   if (!isOpen) return null;
 
   // Function to handle checkout process
   const handleCheckout = () => {
     // Add checkout logic here
-    alert('Proceeding to checkout!');
+    navigate('/consumer/checkout');
   };
 
   // Animation classes for cart panel
