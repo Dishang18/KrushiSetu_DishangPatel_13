@@ -414,12 +414,12 @@ function AdminDashboard() {
                 </p>
               </div>
             </Link>
-            <Link to="/admin/settings">
+            <Link to="/admin/profile">
               <div className="bg-gradient-to-br from-[#1d4b3e] to-[#0f2a24] hover:from-[#235045] hover:to-[#17352d] p-6 rounded-xl flex flex-col items-center justify-center text-center transition-all border border-emerald-500/30 h-full shadow-lg shadow-emerald-900/30 hover:shadow-emerald-700/20 hover:translate-y-[-2px]">
                 <div className="w-12 h-12 bg-purple-500/30 rounded-full flex items-center justify-center mb-3">
                   <Settings className="w-6 h-6 text-purple-300" />
                 </div>
-                <h3 className="text-white font-medium mb-1">Settings</h3>
+                <h3 className="text-white font-medium mb-1">Profile</h3>
                 <p className="text-emerald-100/80 text-xs">Configure the platform</p>
               </div>
             </Link>

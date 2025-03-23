@@ -3,9 +3,11 @@ import Navbar from '../../components/Navbar';
 import { motion } from 'framer-motion';
 import { CreditCard, Wallet, MapPin, Phone, Mail, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useAuth from "../../hooks/useAuth";
 
 function Checkout() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,6 +18,8 @@ function Checkout() {
     email: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('cod');
+
+  // setUserData(user);
 
   // Load Razorpay script
   useEffect(() => {
@@ -99,6 +103,7 @@ function Checkout() {
       }
 
       const data = await response.json();
+      console.log('Razorpay order data:', data);            
       return data.orderId;
     } catch (error) {
       console.error('Error creating Razorpay order:', error);
@@ -141,7 +146,8 @@ function Checkout() {
             await createOrder('razorpay');
           } catch (error) {
             console.error('Error verifying payment:', error);
-            alert('Payment verification failed');
+            navigator
+            // alert('Payment verification failed');
           }
         },
         prefill: {
@@ -163,51 +169,48 @@ function Checkout() {
   };
 
   // Create order in database
-  const createOrder = async (paymentMethod) => {
-    try {
-      const orderData = {
-        consumer_id: userData.id,
-        items: cartItems.map(item => ({
-          product_id: item._id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity
-        })),
-        total_amount: totalPrice,
-        delivery_details: deliveryDetails,
-        payment_method: paymentMethod,
-        status: 'pending'
-      };
+  const createOrder = async () => {
+    console.log("Creating order with user data:", user);
+    console.log("Sending order data:", orderData);
 
-      console.log('Sending order data:', orderData);
-
-      const response = await fetch('http://localhost:5000/api/orders/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      const data = await response.json();
-      console.log('Server response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.message || data.error || 'Failed to create order');
-      }
-
-      alert('Order placed successfully!');
-      localStorage.removeItem('cart');
-      navigate('/consumer/orders');
-    } catch (error) {
-      console.error('Error creating order:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack
-      });
-      alert(error.message || 'Failed to place order');
+    // Validate items before sending request
+    if (!orderData.items || orderData.items.length === 0) {
+        console.error("Error: No items in the order.");
+        return;
     }
-  };
+
+    // Check each item for required properties
+    const invalidItems = orderData.items.filter(item => 
+        !item.product_id || !item.name || !item.price || !item.quantity
+    );
+
+    if (invalidItems.length > 0) {
+        console.error("Error: Some items are missing required properties", invalidItems);
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5000/api/orders/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || "Order creation failed");
+        }
+
+        console.log("Order created successfully:", data);
+    } catch (error) {
+        console.error("Error creating order:", error);
+    }
+};
+
+
+
 
   // Handle place order
   const handlePlaceOrder = async () => {

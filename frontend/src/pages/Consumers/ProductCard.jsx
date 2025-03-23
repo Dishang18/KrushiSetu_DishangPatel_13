@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { ShoppingCart, Star, Leaf, IndianRupee, Package, User } from 'lucide-react';
 
 const ProductCard = ({ product, addToCart, isInCart }) => {
   // Safely extract properties with default values to prevent undefined errors
@@ -24,78 +26,89 @@ const ProductCard = ({ product, addToCart, isInCart }) => {
     safePrice;
 
   return (
-    <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700 border-opacity-50">
-      <div className="relative h-48 overflow-hidden">
-        {image_url ? (
-          <img 
-            src={image_url} 
-            alt={name} 
-            className="w-full h-full object-cover transition-transform hover:scale-105"
-            onError={(e) => {
-              e.target.src = "https://placehold.co/400x300/1a332e/white?text=Product";
-            }}
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-green-800 to-green-600 flex items-center justify-center">
-            <span className="text-white text-xl font-medium">{name}</span>
-          </div>
-        )}
-        
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.3 }}
+      className="bg-[#2d4f47] rounded-xl overflow-hidden border border-teal-500/20 shadow-lg hover:shadow-xl transition-all duration-300"
+    >
+      <div className="relative group">
+        <img
+          src={image_url || 'https://placehold.co/300x300/1a332e/white?text=Product'}
+          alt={name}
+          className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1a332e]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         {safeDiscount > 0 && (
           <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
             {safeDiscount}% OFF
           </div>
         )}
-        
-        <div className="absolute bottom-0 left-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1">
-          {category}
-        </div>
-      </div>
-
-      <div className="p-4">
-        <h3 className="text-xl font-semibold text-green-100 mb-1">{name}</h3>
-        
-        <div className="flex justify-between items-center mb-2">
-          <div className="flex items-center">
-            {safeDiscount > 0 ? (
-              <div className="flex items-center">
-                <span className="text-green-400 font-bold text-lg mr-2">₹{discountedPrice.toFixed(2)}</span>
-                <span className="text-gray-400 line-through text-sm">₹{safePrice.toFixed(2)}</span>
-              </div>
-            ) : (
-              <span className="text-green-400 font-bold text-lg">₹{safePrice.toFixed(2)}</span>
-            )}
-            <span className="text-gray-400 text-sm ml-1">/{unit}</span>
-          </div>
-          <div className="text-yellow-400 text-sm">
-            {available_quantity > 0 ? `${available_quantity} ${unit} left` : 'Out of stock'}
-          </div>
-        </div>
-
-        <p className="text-gray-300 text-sm mb-4 line-clamp-2">{description}</p>
-        
-        {traceability?.harvest_date && (
-          <div className="text-xs text-gray-400 mb-3">
-            <span className="font-medium">Harvested:</span> {new Date(traceability.harvest_date).toLocaleDateString()} 
-            {traceability.harvest_method && `(${traceability.harvest_method})`}
+        {product.organic && (
+          <div className="absolute top-4 left-4 bg-teal-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2 shadow-lg">
+            <Leaf className="w-4 h-4" />
+            <span>Organic</span>
           </div>
         )}
+      </div>
+
+      <div className="p-5 space-y-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold text-white group-hover:text-emerald-300 transition-colors">
+              {name}
+            </h3>
+            <div className="flex items-center gap-2 mt-1 text-gray-300 text-sm">
+              <User className="w-4 h-4" />
+              <span>{traceability?.farmer || 'Unknown Farmer'}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 bg-teal-500/10 px-3 py-1 rounded-full">
+            <Star className="w-4 h-4 text-emerald-300 fill-current" />
+            <span className="text-white text-sm font-medium">4.5</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-teal-500/10 rounded-lg">
+              <Package className="w-5 h-5 text-emerald-300" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-300">Available</p>
+              <p className="text-white font-medium">{available_quantity > 0 ? `${available_quantity} ${unit} left` : 'Out of stock'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-teal-500/10 rounded-lg">
+              <IndianRupee className="w-5 h-5 text-emerald-300" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-300">Price</p>
+              <p className="text-white font-medium">₹{discountedPrice.toFixed(2)}/{unit}</p>
+            </div>
+          </div>
+        </div>
 
         <button 
           onClick={() => addToCart(product)}
           disabled={available_quantity <= 0}
-          className={`w-full py-2 px-4 rounded-lg transition-colors ${
+          className={`w-full py-3 px-4 rounded-lg transition-all duration-300 ${
             available_quantity <= 0
-              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              ? 'bg-[#3d5f57] text-gray-400 cursor-not-allowed'
               : isInCart
-              ? 'bg-green-700 hover:bg-green-800 text-white'
-              : 'bg-green-600 hover:bg-green-700 text-white'
+              ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20'
+              : 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20'
           }`}
         >
-          {available_quantity <= 0 ? 'Out of Stock' : isInCart ? 'Add More' : 'Add to Cart'}
+          <div className="flex items-center justify-center gap-2">
+            <ShoppingCart className="w-5 h-5" />
+            {available_quantity <= 0 ? 'Out of Stock' : isInCart ? 'Add More' : 'Add to Cart'}
+          </div>
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

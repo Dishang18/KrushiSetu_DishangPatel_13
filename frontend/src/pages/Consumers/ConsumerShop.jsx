@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import CartSidebar from "./CartSidebar";
 import axiosInstance from "../../context/axiosInstance";
+import { motion } from 'framer-motion';
+import { 
+  ShoppingBag, 
+  Search, 
+  ShoppingCart,
+  Loader2,
+  AlertCircle,
+  Package,
+  Leaf,
+  Filter
+} from 'lucide-react';
 
 const ConsumerShop = () => {
   const [products, setProducts] = useState([]);
@@ -115,58 +126,150 @@ const ConsumerShop = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a1f1a] via-[#0a2018] to-[#0c2a22]">
+    <div className="min-h-screen bg-[#1a332e]">
       <Navbar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+            Farm Fresh Products
+          </h1>
+          <p className="text-emerald-300">
+            Browse and shop for fresh, organic produce from our certified farmers
+          </p>
+        </motion.div>
 
-      <div className="container mx-auto pt-24 px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-green-100">Farm Fresh Products</h1>
-          
-          <button 
+        {/* Search and Cart Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex flex-col md:flex-row gap-4"
+        >
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search products by name, category, or farmer..."
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-[#2d4f47] border border-teal-500/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <button
             onClick={toggleCart}
-            className="relative bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center space-x-2"
+            className="relative bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-300"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+            <ShoppingCart className="w-5 h-5" />
             <span>Cart</span>
             {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                 {calculateTotalItems()}
               </span>
             )}
           </button>
-        </div>
+        </motion.div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        {/* Stats Overview */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          <div className="bg-[#2d4f47] p-6 rounded-xl border border-teal-500/20">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-teal-500/10 rounded-lg">
+                <Package className="w-6 h-6 text-teal-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total Products</p>
+                <p className="text-2xl font-bold text-white">{products.length}</p>
+              </div>
+            </div>
           </div>
-        ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
+          
+          <div className="bg-[#2d4f47] p-6 rounded-xl border border-teal-500/20">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-teal-500/10 rounded-lg">
+                <Leaf className="w-6 h-6 text-teal-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Organic Products</p>
+                <p className="text-2xl font-bold text-white">
+                  {products.filter(p => p.organic).length}
+                </p>
+              </div>
+            </div>
           </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-300">No products available at this time.</p>
+
+          <div className="bg-[#2d4f47] p-6 rounded-xl border border-teal-500/20">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-teal-500/10 rounded-lg">
+                <ShoppingCart className="w-6 h-6 text-teal-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Cart Items</p>
+                <p className="text-2xl font-bold text-white">{calculateTotalItems()}</p>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.isArray(products) && products.map((product) => {
-              // Ensure each product has a unique key
-              const uniqueKey = product._id || `product-${product.name}-${Math.random().toString(36).substr(2, 9)}`;
-              
-              return (
+
+          <div className="bg-[#2d4f47] p-6 rounded-xl border border-teal-500/20">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-teal-500/10 rounded-lg">
+                <ShoppingBag className="w-6 h-6 text-teal-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Cart Total</p>
+                <p className="text-2xl font-bold text-white">₹{calculateTotalPrice()}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Products Section */}
+        <div className="bg-[#2d4f47] rounded-xl border border-teal-500/20 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-white">Available Products</h2>
+            <button className="flex items-center gap-2 px-4 py-2 bg-teal-500/10 rounded-lg text-teal-400 hover:bg-teal-500/20 transition-colors">
+              <Filter className="w-4 h-4" />
+              Filter
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <Loader2 className="w-12 h-12 animate-spin mb-4" />
+              <p>Loading products...</p>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-64 text-red-400 bg-red-400/10 rounded-lg p-4">
+              <AlertCircle className="w-6 h-6 mr-2" />
+              <span>{error}</span>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <Package className="w-16 h-16 mb-4" />
+              <p className="text-xl">No products available</p>
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              {Array.isArray(products) && products.map((product) => (
                 <ProductCard 
-                  key={uniqueKey} 
+                  key={product._id || `product-${Math.random()}`}
                   product={product} 
                   addToCart={addToCart}
                   isInCart={cart.some(item => item._id === product._id)}
                 />
-              );
-            })}
-          </div>
-        )}
+              ))}
+            </motion.div>
+          )}
+        </div>
 
         {/* Cart Sidebar */}
         <CartSidebar
