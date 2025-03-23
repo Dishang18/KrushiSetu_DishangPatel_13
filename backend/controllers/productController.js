@@ -108,32 +108,19 @@ export const createProduct = async (req, res) => {
 // @access  Public
 export const getProducts = async (req, res) => {
   try {
-    // Build query filters
-    const filters = {};
+    // Fetch all products with full details
+    const products = await Product.find()
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .populate("farmer_id") // Populate all farmer details
+      .lean(); // Convert Mongoose documents to plain JavaScript objects
 
-    if (req.query.category) {
-      filters.category = req.query.category;
-    }
-
-    if (req.query.minPrice || req.query.maxPrice) {
-      filters.price = {};
-      if (req.query.minPrice) filters.price.$gte = Number(req.query.minPrice);
-      if (req.query.maxPrice) filters.price.$lte = Number(req.query.maxPrice);
-    }
-
-    // Only show active products
-    filters.is_active = true;
-
-    const products = await Product.find(filters)
-      .sort({ createdAt: -1 })
-      .populate("farmer_id", "name"); // Populate farmer name
-
-    res.json({ data: products });
+    res.json({ success: true, data: products });
   } catch (error) {
     console.error("Error fetching products:", error);
-    res.status(500).json({ message: "Failed to fetch products" });
+    res.status(500).json({ success: false, message: "Failed to fetch products" });
   }
 };
+
 
 export const getALLProducts = async (req, res) => {
   try {
