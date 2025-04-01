@@ -18,6 +18,6 @@ router.post('/create', createOrder);
 // router.get('/consumer/:consumer_id', getConsumerOrders);
 router.get('/:order_id', getOrderById);
 router.patch('/:order_id/status', updateOrderStatus);
-// router.get('/farmer/:farmer_id', getFarmerOrders);
+router.get('/farmer/:farmer_id', getFarmerOrders);
 
 export { router as orderRoutes };

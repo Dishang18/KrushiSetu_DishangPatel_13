@@ -93,7 +93,7 @@ function Checkout() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: totalPrice * 100, // Convert to paise
+          amount: totalPrice , // Convert to paise
           currency: 'INR'
         }),
       });
@@ -118,7 +118,7 @@ function Checkout() {
 
       const options = {
         key: 'rzp_test_3ZarsC2SklRuTX', // Replace with your Razorpay test key
-        amount: totalPrice * 100,
+        amount: totalPrice ,
         currency: 'INR',
         name: 'Farm Fresh',
         description: 'Purchase KrushiSetu',
