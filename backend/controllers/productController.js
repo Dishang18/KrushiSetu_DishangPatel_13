@@ -72,6 +72,9 @@ export const createProduct = async (req, res) => {
 
     // Create image URL for frontend access
     const imageUrl = `/api/products/image/${req.file.filename}`;
+    console.log("Image URL:", imageUrl);
+
+    console.log("Creating product with farmer ID:", req.file.id);
 
     // Create new product
     const product = await Product.create({
