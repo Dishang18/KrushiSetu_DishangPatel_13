@@ -1,4 +1,4 @@
-# 🌾 AgroSync - Direct Market Access Platform
+# 🌾 KrushiSetu — Digital Document Verification & Marketplace for Smallholder Farmers
 
 AgroSync is a MERN stack platform that connects **farmers** and **consumers** directly for fresh produce trading.  
 It ensures transparency, food safety, real-time payments, and powerful analytics for all users.
