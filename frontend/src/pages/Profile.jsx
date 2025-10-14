@@ -60,7 +60,8 @@ const ProfilePage = ({ onLogout }) => {
         setError("Authentication required. Please log in.");
         return;
       }
-      
+      console.log("Fetching profile with token:", token);
+      console.log("API Base URL:", API_BASE_URL);
       const { data } = await axios.get(`${API_BASE_URL}/api/users/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
