@@ -4,7 +4,7 @@ import { signInWithGoogle } from "../firebase";
 import Navbar from "../components/Navbar";
 
 // Define API base URL
-const API_BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // Email validation function
 const validateEmail = (email) => {

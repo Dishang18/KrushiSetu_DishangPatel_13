@@ -16,7 +16,7 @@ const RegisterPage = () => {
   const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
 
-  const API_BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // Validate Email Format
   const validateEmail = (email) => {
