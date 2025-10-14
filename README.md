@@ -1,4 +1,4 @@
-# 🌾 KrushiSetu — Digital Document Verification & Marketplace for Smallholder Farmers<img width="2810" height="158" alt="image" src="https://github.com/user-attachments/assets/3eddbd78-aa2c-4d69-b508-0b419d4eb769" />
+# 🌾 KrushiSetu — Digital Document Verification & Marketplace for Smallholder Farmers
 
 AgroSync is a MERN stack platform that connects **farmers** and **consumers** directly for fresh produce trading.  
 It ensures transparency, food safety, real-time payments, and powerful analytics for all users.
