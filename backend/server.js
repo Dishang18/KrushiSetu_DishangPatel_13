@@ -23,7 +23,8 @@ const httpServer = createServer(app);
 
 // Update CORS configuration
 app.use(cors({
-  origin: "http://localhost:5173", // Your frontend URL
+  origin: ["http://localhost:5173", "https://krushisetu-dishangpatel-13.onrender.com"],
+   // Your frontend URL
   credentials: true
 }));
 
