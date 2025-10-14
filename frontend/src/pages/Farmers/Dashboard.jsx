@@ -704,12 +704,12 @@ function FarmerDashboard() {
           </div>
 
           {/* Verification Status Card - Enhanced */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className={`backdrop-blur-sm rounded-xl p-6 border mb-8 ${verificationStatus.bgColor} ${verificationStatus.borderColor}`}
-          >
+          > */}
             {/* <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <VerificationIcon className={`w-6 h-6 ${verificationStatus.color}`} />
@@ -744,7 +744,7 @@ function FarmerDashboard() {
                 )}
               </div>
             </div> */}
-          </motion.div>
+          {/* </motion.div> */}
 
           {/* Recent Orders - COMPLETELY LOCKED if not verified */}
           <div className="mb-8">
