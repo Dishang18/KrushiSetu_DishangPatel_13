@@ -23,7 +23,7 @@ const httpServer = createServer(app);
 
 // Update CORS configuration
 app.use(cors({
-  origin: "https://krushisetu-dishangpatel-13-1.onrender.com",
+  origin: ["https://krushisetu-dishangpatel-13-1.onrender.com", "https://krushi-setu.netlify.app"],
 
   credentials: true
 }));
