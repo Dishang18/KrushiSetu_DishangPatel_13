@@ -22,11 +22,11 @@ const app = express();
 const httpServer = createServer(app);
 
 // Update CORS configuration
-// app.use(cors({
-//   origin: ["http://localhost:5173", "https://krushisetu-dishangpatel-13.onrender.com"],
-//    // Your frontend URL
-//   credentials: true
-// }));
+app.use(cors({
+  origin: "https://krushisetu-dishangpatel-13-1.onrender.com",
+   // Your frontend URL
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
