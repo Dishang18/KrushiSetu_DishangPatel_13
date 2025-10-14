@@ -68,6 +68,7 @@ export default function LoginForm() {
     setLoading(true);
     try {
       console.log(`[${currentTime}] Login attempt with email: ${email}`);
+      console.log("API Base URL:", API_BASE_URL);
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
