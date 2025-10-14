@@ -231,7 +231,7 @@ const ProfilePage = ({ onLogout }) => {
   const backgroundStyle = {
     minHeight: "100vh",
     background: "linear-gradient(to bottom, #0c1816, #0b1f1a)",
-    paddingTop: "80px", // Account for navbar
+     // Account for navbar
     paddingBottom: "40px" // Add bottom padding
   };
 
